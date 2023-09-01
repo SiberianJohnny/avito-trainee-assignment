@@ -9,6 +9,8 @@ import { useAppDispatch, useAppSelector } from '../../utils/utils';
 import { setAllGenres, setAllPlatforms } from '../../store/reducers/filtersSlice';
 import { IGame } from '../../types/responses';
 import ErrorComponent from '../ErrorPage/ErrorComponent';
+import { useRef } from "react";
+import {ViewportList} from "react-viewport-list";
 
 const GamesGrid: React.FC = () => {
   const [dataToShow, setDataToShow] = useState<'genre' | 'platform' | 'sort' |undefined>()
@@ -17,6 +19,8 @@ const GamesGrid: React.FC = () => {
   const [sortByPlatform, {data: sortedByPlatformData, isFetching: isSortedByPlatformFetching, isError: sortedByPlatformError}] = useLazySortByPlatformQuery()
   const [sortByGenre, {data: sortedByGenreData, isFetching: isSortedByGenreFetching, isError: sortedByGenreError}] = useLazySortByGenreQuery()
   const [sort, {data: sortedData, isFetching: isSortedFetching, isError: sortedDataError}] = useLazySortQuery()
+  
+  const ref = useRef(null);
   
   const collectFilterValues = (key: keyof IGame): string[] => {
     const uniqueValues: Set<string> = new Set();
@@ -58,19 +62,6 @@ const GamesGrid: React.FC = () => {
     }
   },[isGamesDataFetching])
   
-  const itemsPerPage: number = 20;
-  const [hasMore, setHasMore] = useState<boolean>(true);
-  const [records, setrecords] = useState<number>(itemsPerPage);
-  const loadMore = (): void => {
-    if (records === data.length) {
-      setHasMore(false);
-    } else {
-      setTimeout(() => {
-        setrecords(records + itemsPerPage);
-      }, 2000);
-    }
-  };
-  
   if(sortedByPlatformError || gamesDataError || sortedByGenreError || sortedDataError) {
     return <ErrorComponent />
   }
@@ -78,62 +69,70 @@ const GamesGrid: React.FC = () => {
   if(gamesData && !isGamesDataFetching && !isSortedByPlatformFetching && !isSortedByGenreFetching && !isSortedFetching) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center'}}>
-          <Grid className={styles.grid_container} container spacing={2} justifyContent="center">
-            {dataToShow === undefined && gamesData?.map((game) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={game.id}>
-                <GameCard
-                  id={game.id} 
-                  title={game.title}
-                  release_date={game.release_date}
-                  genre={game.genre}
-                  publisher={game.publisher}
-                  developer={game.developer}
-                  thumbnail={game.thumbnail}
-                />
-              </Grid>
-            ))}
+          <Grid ref={ref} className={styles.grid_container} container spacing={2} justifyContent="center">
+            <ViewportList viewportRef={ref} items={gamesData}>
+              {(game) => (
+                <Grid item xs={12} sm={6} md={4} lg={3}>
+                  <GameCard
+                    id={game.id} 
+                    title={game.title}
+                    release_date={game.release_date}
+                    genre={game.genre}
+                    publisher={game.publisher}
+                    developer={game.developer}
+                    thumbnail={game.thumbnail}
+                    />
+                </Grid>
+              )}
+            </ViewportList>
             
-            {dataToShow === 'genre' && sortedByGenreData?.map((game) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={game.id}>
-                <GameCard
-                  id={game.id} 
-                  title={game.title}
-                  release_date={game.release_date}
-                  genre={game.genre}
-                  publisher={game.publisher}
-                  developer={game.developer}
-                  thumbnail={game.thumbnail}
-                />
-              </Grid>
-            ))}
+            <ViewportList viewportRef={ref} items={sortedByGenreData}>
+              {(game) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={game.id}>
+                  <GameCard
+                    id={game.id} 
+                    title={game.title}
+                    release_date={game.release_date}
+                    genre={game.genre}
+                    publisher={game.publisher}
+                    developer={game.developer}
+                    thumbnail={game.thumbnail}
+                  />
+                </Grid>
+              )}
+            </ViewportList>
             
-            {dataToShow === 'platform' && sortedByPlatformData?.map((game) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={game.id}>
-                <GameCard
-                  id={game.id} 
-                  title={game.title}
-                  release_date={game.release_date}
-                  genre={game.genre}
-                  publisher={game.publisher}
-                  developer={game.developer}
-                  thumbnail={game.thumbnail}
-                />
-              </Grid>
-            ))}
+            <ViewportList viewportRef={ref} items={sortedByPlatformData}>
+              {(game) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={game.id}>
+                  <GameCard
+                    id={game.id} 
+                    title={game.title}
+                    release_date={game.release_date}
+                    genre={game.genre}
+                    publisher={game.publisher}
+                    developer={game.developer}
+                    thumbnail={game.thumbnail}
+                  />
+                </Grid>
+              )}
+            </ViewportList>
             
-            {dataToShow === 'sort' && sortedData?.map((game) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={game.id}>
-                <GameCard
-                  id={game.id} 
-                  title={game.title}
-                  release_date={game.release_date}
-                  genre={game.genre}
-                  publisher={game.publisher}
-                  developer={game.developer}
-                  thumbnail={game.thumbnail}
-                />
-              </Grid>
-            ))}
+            <ViewportList viewportRef={ref} items={sortedData}>
+              {(game) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={game.id}>
+                  <GameCard
+                    id={game.id} 
+                    title={game.title}
+                    release_date={game.release_date}
+                    genre={game.genre}
+                    publisher={game.publisher}
+                    developer={game.developer}
+                    thumbnail={game.thumbnail}
+                  />
+                </Grid>
+              )}
+            </ViewportList>
           </Grid>
       </Box>
     )
